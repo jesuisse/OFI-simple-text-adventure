@@ -7,6 +7,9 @@ Programmflusses durch Funktionsaufrufe und if-elif-else-Kontrollstrukturen.
 """
 
 ANLEITUNG_TEXT = """
+Die Suche nach dem verlorenen Schatz
+=====================================
+
 Hallo Abenteurer*in! Erkunde die Welt, indem du 'gehe nach westen', 'osten' usw
 eintippst. Du kannst auch Dinge anschauen, nehmen, Türen und Truhen öffnen usw.
 Viel Erfolg bei der Suche nach dem Schatz deiner Vorfahren! 
@@ -43,7 +46,7 @@ Der Garten benötigt dringend Hilfe von jemandem mit einem grünen Daumen. Über
 wuchern Pflanzen; dir ist nicht klar, was Unkraut ist und was nicht. Mitten im
 Garten wachsen riesige Bohnenstauden, so hoch, wie du sie noch nie gesehen hast.
 Dahinter gab es wohl einmal Kartoffeln, aber das muss schon lange her sein. Und
-sind das Tomaten dort hinten?"""
+sind das Tomaten dort hinten neben dem halb umgefallenen Holzschild?"""
 
 STRAND_TEXT="""
 Du stehst in auf dem Sandstrand einer kleinen Bucht. Die Wellen donnern gegen die
@@ -76,8 +79,6 @@ truhe_ist_offen = False
 erstes_mal_truhe_öffnen=True
 steinschlag=False
 
-spiel_zu_ende = False
-raum="Olivenhain"
 
 def finde_richtung(eingabe):
     if eingabe == "n" or "norden" in eingabe:
@@ -216,9 +217,12 @@ def öffne(objekt):
                 print("Jetzt ist sie noch offener als vorher.")
             elif spieler_hat_schlüssel:
                 print("Der Schlüssel passt. Du öffnest die Tür.")
-                tür_ist_offen=True
+                tür_ist_offen=True            
             elif spieler_hat_brecheisen:
                 print("Womit? Mit dem Brecheisen? Das wird nicht funktionieren. Und hat dir nie jemand gesagt, dass Gewalt keine Lösung ist?")
+            elif spieler_hat_spaten:
+                print("Du probierst die Tür mit dem Spaten aufzubrechen. Ohne Erfolg. Der Spaten zerbricht.")
+                spieler_hat_spaten = False
             elif spieler_hat_tomate:
                 print("Womit? Die Tomate wird dir jedenfalls dabei nicht helfen.")
             else:
@@ -239,7 +243,7 @@ def öffne(objekt):
             print("Wie willst du die Truhe ohne Werkzeug und ohne Schlüssel öffnen?")
             print("Etwa mit blossen Händen?")
             if erstes_mal_truhe_öffnen:
-                print("Verstehst du das Konzept eines Abenteuerspiels? Ich erkläre es dir:")
+                print("Ich erkläre dir das Konzept eines Abenteuerspiels:")
                 print("Du machst dich auf die Suche nach nützlichen Gegenstände und kommst")
                 print("zurück, wenn du was brauchbares gefunden hast. Aber was weiss ich schon?")
                 print("Ich bin ja nur ein dummer Computer, der mit dir dieses Spiel spielt.")
@@ -274,6 +278,10 @@ def betrachte(objekt):
             print("Ein alter Spaten aus Holz, der aussieht, als könnte er es mit einem Panzer aufnehmen.")
         else:
             print("Irgendwo liegt immer ein Spaten rum. Nur wo?")
+    elif objekt == "schild":
+        if raum =="Garten":
+            print("Kaum leserlich, aber da steht: 'Achtung, der Garten ist mit Schwermetallrückständen verseucht!'")
+            print("Ob die Bohnenstauden deshalb so riesig gewachsen sind?")
     elif objekt == "schlüssel":
         if raum=="Steinhaus" or spieler_hat_schlüssel:
             print("Ein rostiger Schlüssel. Könnte zu einer Tür gehören.")
@@ -302,10 +310,12 @@ def betrachte(objekt):
             spiel_zu_ende = True
         else:                
             return print("Eine alte Holztruhe mit extrem solide aussehenden Eisenbeschlägen. Leider verschlossen.")
-    
+    elif objekt=="sand" and raum=="Strand":
+        print("Sand eben. Der an einem Strand rumliegt. Kennst du, oder?")
+
 
 def pflanze(objekt):
-    global spieler_hat_bohne, raum, spieler_hat_brecheisen, spieler_hat_schlüssel
+    global spieler_hat_bohne, raum, spieler_hat_schlüssel
     if objekt=="bohne" and spieler_hat_bohne:
         if raum=="Garten":
             print("Hervorragende Idee. Es hatte hier ja vorher noch fast keine Bohnen.")
@@ -340,7 +350,7 @@ def pflanze(objekt):
         print("Das kannst du nicht vergraben.")
 
 def iss(objekt):
-    global raum, spieler_hat_tomate, spieler_hat_bohne, spiel_zu_ende
+    global spieler_hat_bohne, spiel_zu_ende
     if objekt=="tomate" and (spieler_hat_tomate or raum=="Garten"):
         print("Du isst die Tomate. Sie schmeckt phantastisch.")
         print("Bis zum Moment, wo du an einer akuten Rostvergiftung stirbst.")
@@ -398,6 +408,8 @@ def objekt_in_eingabe(eingabe):
         return "truhe"
     elif "sand" in eingabe:
         return "sand"
+    elif "schild" in eingabe:
+        return "schild"
     elif "hinein" in eingabe and raum == "Im Steinhaus":
         return "hinein"
     else:
@@ -407,7 +419,7 @@ def ist_kommando_ende(eingabe):
     return eingabe == "ende" or eingabe == "quit" or eingabe == "exit"
 
 def ist_kommando_betrachte(eingabe):
-    return "schaue" in eingabe or "betrachte" in eingabe or "untersuche" in eingabe
+    return "schaue" in eingabe or "betrachte" in eingabe or "untersuche" in eingabe or "lies" in eingabe or "lese" in eingabe
 
 def ist_kommando_öffne(eingabe):
     return "öffne" in eingabe
@@ -453,14 +465,13 @@ def mache_aktion(eingabe):
 
 def shell():
     global raum
-    global spiel_zu_ende
     
-    print(beschreibung(raum))
+    gehe_zu(raum)
     while not spiel_zu_ende:
         eingabe = input(">")
         eingabe = eingabe.lower()
         if ist_kommando_ende(eingabe):
-            break
+            return
         richtung = finde_richtung(eingabe)
         if richtung != "":
             ziel = finde_raum_in_richtung(raum, richtung)
@@ -472,7 +483,10 @@ def shell():
         else:
             mache_aktion(eingabe)        
 
+
 print(ANLEITUNG_TEXT)
 input()
+spiel_zu_ende = False
+raum="Olivenhain"
 shell()
 
