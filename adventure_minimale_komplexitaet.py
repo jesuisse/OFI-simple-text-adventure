@@ -310,9 +310,10 @@ def betrachte(objekt):
             spiel_zu_ende = True
         else:                
             return print("Eine alte Holztruhe mit extrem solide aussehenden Eisenbeschlägen. Leider verschlossen.")
-    elif objekt=="sand" and raum=="Strand":
+    elif objekt=="sand" and (raum=="Strand" or raum=="Steinschlag"):
         print("Sand eben. Der an einem Strand rumliegt. Kennst du, oder?")
-
+    else:
+        print("Ich sehe daran nichts besonderes.")
 
 def pflanze(objekt):
     global spieler_hat_bohne, raum, spieler_hat_schlüssel
@@ -380,9 +381,11 @@ def iss(objekt):
     else:
         print("Das kannst du nicht essen.")
 
-def gehe_zu(raum):
-    text = beschreibung(raum)
+def gehe_zu(ziel):
+    global raum
+    raum=ziel    
     print(raum)
+    text = beschreibung(raum)
     if text:
         print(text)
     objekte=objekte_in_raum(raum)
@@ -463,10 +466,9 @@ def mache_aktion(eingabe):
     else:
         print("Das verstehe ich nicht.")
 
-def shell():
-    global raum
-    
-    gehe_zu(raum)
+def shell():    
+    gehe_zu("Olivenhain")
+    spiel_zu_ende = False
     while not spiel_zu_ende:
         eingabe = input(">")
         eingabe = eingabe.lower()
@@ -477,16 +479,13 @@ def shell():
             ziel = finde_raum_in_richtung(raum, richtung)
             if ziel == "":
                 print("In diese Richtung kannst du nicht gehen.")
-            else:
-                raum = ziel
-                gehe_zu(raum)
+            else:                
+                gehe_zu(ziel)
         else:
-            mache_aktion(eingabe)        
+            mache_aktion(eingabe)
 
 
 print(ANLEITUNG_TEXT)
 input()
-spiel_zu_ende = False
-raum="Olivenhain"
 shell()
 
